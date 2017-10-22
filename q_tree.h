@@ -14,9 +14,7 @@
 
 namespace q_t
 {
-using std::string;
-using std::ifstream;
-using std::ofstream;
+using namespace std;
 class Ques_Tree;
 struct ll_node;
 struct dyn_ll;
@@ -28,8 +26,9 @@ enum Node_type
 };
 struct dyn_arr;
 dyn_ll* FileScanner();
-void FileWriter(Ques_Tree);
+void FileWriter(dyn_ll*);
 void PlayGame();
+void TreeToArr(Tree_Nd*,ll_node*);
 }
 
 /* Doubly linked list for faster read and write */
@@ -40,7 +39,8 @@ struct q_t::ll_node
 	struct ll_node *prev;
 	Node_type      type;
 	ll_node(string st, ll_node *nxt=NULL, ll_node *prv=NULL,Node_type typ=Q_Nd ):str(st),next(nxt),prev(prv), type(typ) {}
-	~ll_node();
+	ll_node() { next = prev = NULL; }
+	//~ll_node();
 };
 
 struct q_t::dyn_ll
@@ -62,23 +62,14 @@ class q_t::Ques_Tree
 private:
 	q_t::Tree_Nd* root;
 	q_t::Tree_Nd* prev; //To be used during parsing to locate pos to insert newly gathered data
+	Tree_Nd* CreateTree(ll_node*);
+	void Node_Cleaner(Tree_Nd*);
 public:
 	Ques_Tree():root(NULL),prev(NULL) { }
-	void CreateTree(dyn_ll*);
-	//void InsertNode(string);
-	//void DeleteNode(string);
+	~Ques_Tree();
+	void Create_Q_Tree(ll_node*);
+	friend void q_t::TreeToArr(Tree_Nd*,ll_node*);
+	friend void q_t::PlayGame();
 };
-
-/*
- * Your program also have to be able to write the tree to an output file and read it back in.
- * That way your question tree can grow each time a user runs the program.
- * To be able to read and write the tree, we need a set of rules for how to represent
- * the tree which we’ll refer to as the standard format for a question tree.
- * A tree is specified by a nonempty sequence of line pairs, one for each node of the tree.
- * The first line of each pair should contain either the text “Q:” to indicate that it is a question node
- * (i.e., a branch node) or the text “A:” to indicate that it is an answer node (i.e., a leaf node).
- * The second line of each pair should contain the text for that node (the question or answer).
- * The nodes should appear in preorder (i.e., in the order produced by a preorder traversal of the tree).
- */
 
 #endif /* Q_TREE_H_ */
