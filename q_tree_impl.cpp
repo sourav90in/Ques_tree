@@ -65,16 +65,18 @@ Ques_Tree::~Ques_Tree()
 dyn_ll::~dyn_ll()
 {
 	ll_node * tmp_node = this->nd;
+	cout<<"LL destructor called";
 
 	while(tmp_node != NULL )
 	{
 		delete tmp_node;
 		tmp_node = this->nd->next;
 	}
-	delete this;
+	//delete this;
 }
 
-void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr )
+
+void QTreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr )
 {
 	if(tn_ptr == NULL)
 		return;
@@ -86,17 +88,23 @@ void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr )
 		if( tn_ptr->left == NULL && tn_ptr->right == NULL ) ln_ptr->type = A_Nd;
 		else ln_ptr->type = Q_Nd;
 
+		//TO DO: Extra node allocated at end of LL incase of new input addition
 		if(ln_ptr->next == NULL )
 		{
 			ll_node* t_ptr = new ll_node;
 			ln_ptr->next = t_ptr;
 		}
 
-		TreeToArr(tn_ptr->left, ln_ptr->next, prog_ptr);
-		TreeToArr(tn_ptr->right,(*prog_ptr)->next , prog_ptr );
+		QTreeToArr(tn_ptr->left, ln_ptr->next, prog_ptr);
+		QTreeToArr(tn_ptr->right,(*prog_ptr)->next , prog_ptr );
 	}
 	else return;
 
+}
+
+void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr )
+{
+	QTreeToArr(tn_ptr, ln_ptr,&ln_ptr);
 }
 
 
@@ -104,14 +112,19 @@ void q_t::FileWriter(dyn_ll* ll_ptr)
 {
 	ofstream fhl ("qa.txt");
 	string qa_line;
-	string str;
+	string str1;
+	ll_node* tmp_node =ll_ptr->nd;
 	if( fhl.is_open() )
 	{
-		while(ll_ptr->nd->next != NULL )
+		while(tmp_node != NULL )
 		{
-			qa_line = ( ll_ptr->nd->type == Q_Nd? "Q:\r\n":"A: \r\n" );
+			qa_line = ( tmp_node->type == Q_Nd? "Q:\r\n":"A:\r\n" );
+			cout<<qa_line;
 			fhl << qa_line;
-			str = ll_ptr->nd->str;
+			str1 = tmp_node->str;
+			cout<<str1<<"\n";
+			fhl<< str1<<"\n";
+			tmp_node = tmp_node->next;
 		}
 	}
 	fhl.close();
@@ -222,7 +235,7 @@ void q_t::PlayGame()
 				}
 			}
 		}
-		cout<<"Was the answer correct?:";
+		cout<<"Was the answer correct? \n";
 		getline(cin,ans);
 		if(ans == "y\r" || ans == "Y\r" )
 		{
@@ -252,10 +265,13 @@ void q_t::PlayGame()
 	}
 
 	// Game is completed now save the tree to array to File in preoder fashion
-	TreeToArr( q_ptr->root, ll_ptr->nd,&(ll_ptr->nd));
+	//TraverseTree( q_ptr->root);
+	TreeToArr( q_ptr->root, ll_ptr->nd);
+	//TraverseLL(ll_ptr->nd);
 	FileWriter(ll_ptr);
+	//TraverseLL(ll_ptr->nd);
 
-	//Clean up resources
+	//TO DO:Clean up resources
 	/*
 	 * Cleanup array first
 	 * Tree Next

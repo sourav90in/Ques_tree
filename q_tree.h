@@ -28,7 +28,7 @@ struct dyn_arr;
 dyn_ll* FileScanner();
 void FileWriter(dyn_ll*);
 void PlayGame();
-void TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr );
+void TreeToArr( Tree_Nd*, ll_node*);
 void TraverseLL(ll_node*);
 void TraverseTree(Tree_Nd*);
 }
@@ -68,12 +68,13 @@ private:
 	q_t::Tree_Nd* root;
 	q_t::Tree_Nd* prev; //To be used during parsing to locate pos to insert newly gathered data
 	Tree_Nd* CreateTree(ll_node* nd_ptr, ll_node** prog_ptr);
+	void QTreeToArr( Tree_Nd*S, ll_node*,ll_node** );
 	void Node_Cleaner(Tree_Nd*);
 public:
 	Ques_Tree():root(NULL),prev(NULL) { }
 	~Ques_Tree();
 	void Create_Q_Tree(ll_node*);
-	friend void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr );
+	friend void q_t::TreeToArr( Tree_Nd*, ll_node* );
 	friend void q_t::PlayGame();
 	//Debugging functions below
 	friend void TraverseTree(Tree_Nd*);
