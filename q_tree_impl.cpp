@@ -13,19 +13,25 @@
 using namespace q_t;
 
 
-Tree_Nd* Ques_Tree::CreateTree(ll_node* nd_ptr)
+Tree_Nd* Ques_Tree::CreateTree(ll_node* nd_ptr, ll_node** prog_ptr)
 {
+
+	if(nd_ptr == NULL)
+		return NULL;
+
 	Tree_Nd* t_nd;
 	t_nd = new Tree_Nd;
 	t_nd->str = nd_ptr->str;
+	*prog_ptr = nd_ptr;
 	if( nd_ptr->type == A_Nd )
 	{
 		t_nd->left = t_nd->right = NULL;
 	}
 	else
 	{
-		t_nd->left = CreateTree(nd_ptr->next);
-		t_nd->right = CreateTree(nd_ptr->next);
+		t_nd->left = CreateTree(nd_ptr->next,prog_ptr);
+
+		t_nd->right = CreateTree((*prog_ptr)->next,prog_ptr); //This can be done without crash since its a complete binary tree
 	}
 
 	return t_nd;
@@ -34,7 +40,7 @@ Tree_Nd* Ques_Tree::CreateTree(ll_node* nd_ptr)
 
 void Ques_Tree::Create_Q_Tree(ll_node* ln_ptr)
 {
-	root = CreateTree(ln_ptr);
+	root = CreateTree(ln_ptr,&ln_ptr);
 }
 
 void Ques_Tree::Node_Cleaner(Tree_Nd* tn_ptr)
@@ -48,6 +54,7 @@ void Ques_Tree::Node_Cleaner(Tree_Nd* tn_ptr)
 	Node_Cleaner(tmp_ptr);
 
 }
+
 Ques_Tree::~Ques_Tree()
 {
 	Node_Cleaner(this->root);
@@ -67,13 +74,14 @@ dyn_ll::~dyn_ll()
 	delete this;
 }
 
-void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr )
+void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr )
 {
 	if(tn_ptr == NULL)
 		return;
 
 	if( ln_ptr != NULL )
 	{
+		*prog_ptr = ln_ptr;
 		ln_ptr->str = tn_ptr->str;
 		if( tn_ptr->left == NULL && tn_ptr->right == NULL ) ln_ptr->type = A_Nd;
 		else ln_ptr->type = Q_Nd;
@@ -83,9 +91,11 @@ void q_t::TreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr )
 			ll_node* t_ptr = new ll_node;
 			ln_ptr->next = t_ptr;
 		}
+
+		TreeToArr(tn_ptr->left, ln_ptr->next, prog_ptr);
+		TreeToArr(tn_ptr->right,(*prog_ptr)->next , prog_ptr );
 	}
-	TreeToArr(tn_ptr->left, ln_ptr->next);
-	TreeToArr(tn_ptr->right, ln_ptr->next);
+	else return;
 
 }
 
@@ -99,15 +109,33 @@ void q_t::FileWriter(dyn_ll* ll_ptr)
 	{
 		while(ll_ptr->nd->next != NULL )
 		{
-			qa_line = ( ll_ptr->nd->type == Q_Nd? "Q:\n":"A: \n" );
+			qa_line = ( ll_ptr->nd->type == Q_Nd? "Q:\r\n":"A: \r\n" );
 			fhl << qa_line;
 			str = ll_ptr->nd->str;
-			fhl << str << "\n";
 		}
 	}
 	fhl.close();
+}
+
+//LL Debugging func
+void q_t::TraverseLL(ll_node* nd)
+{
+	while(nd != NULL)
+	{
+		cout<<nd->str<<"\n";
+		nd = nd->next;
 	}
 
+}
+
+void q_t::TraverseTree(Tree_Nd* nd)
+{
+	if(nd == NULL )
+		return;
+	cout<<nd->str;
+	TraverseTree(nd->left);
+	TraverseTree(nd->right);
+}
 
 dyn_ll* q_t::FileScanner()
 {
@@ -119,25 +147,30 @@ dyn_ll* q_t::FileScanner()
 		string n_line;
 		dyn_ll* ll_ptr = new dyn_ll;
 		ll_node *prev = NULL;
+		ll_node *tmp;
 		while( getline(fhl, line) )
 		{
 			getline(fhl,n_line) ;
-			if( line == "Q:")
+
+			if( line == "Q:\r")
 			{
-				ll_ptr->nd = new ll_node(n_line,NULL,prev,Q_Nd);
+				tmp = new ll_node(n_line,NULL,prev,Q_Nd);
 			}
 			else
 			{
-				ll_ptr->nd = new ll_node(n_line,NULL,prev,A_Nd);
+				tmp = new ll_node(n_line,NULL,prev,A_Nd);
 			}
 
 			/* Alter the next value of previous node to point to current node */
-			if( prev != NULL ) 	prev->next = ll_ptr->nd ;
-			ll_ptr->nd->prev = prev;
+			if( prev != NULL ) 	prev->next = tmp ;
+			else ll_ptr->nd = tmp;
+
+			tmp->prev = prev;
 			/* Save previous node */
-			prev = ll_ptr->nd;
+			prev = tmp;
 		}
 		fhl.close();
+		TraverseLL(ll_ptr->nd);
 		return ll_ptr;
 	}
 	else return NULL;
@@ -147,13 +180,14 @@ dyn_ll* q_t::FileScanner()
 void q_t::PlayGame()
 {
 	//Scans the file and reads the preorder traversal into the temp DLL
-	dyn_ll* ll_ptr = q_t::FileScanner();
+	dyn_ll* ll_ptr = FileScanner();
 
 	//Convert the read pre-order traversal into a tree;
 	Ques_Tree* q_ptr = new Ques_Tree;
 	q_ptr->Create_Q_Tree(ll_ptr->nd) ;
+	TraverseTree( q_ptr->root);
 	Tree_Nd* t_nd;
-	char ans;
+	string ans;
 	string q_str;
 	string a_str;
 
@@ -166,36 +200,40 @@ void q_t::PlayGame()
 		cout<<"I will ask you a series of questions.. answer them as Y or N only \n";
 		while(t_nd != NULL)
 		{
-			cout<<t_nd->str;
-			cout<<"\n";
-			cin>>ans;
-			q_ptr->prev = t_nd;
-			if(ans == 'y' || ans == 'Y' )
+			if( t_nd->left == NULL && t_nd->right == NULL )
 			{
-				t_nd = t_nd->left;
+				q_ptr->prev = t_nd;
+				cout<<"My guess is:"<<t_nd->str;
+				break;
 			}
 			else
 			{
-				t_nd = t_nd->right;
+				cout<<t_nd->str;
+				cout<<"\n";
+				getline(cin,ans);
+				q_ptr->prev = t_nd;
+				if(ans == "y\r" || ans == "Y\r" )
+				{
+					t_nd = t_nd->left;
+				}
+				else
+				{
+					t_nd = t_nd->right;
+				}
 			}
 		}
 		cout<<"Was the answer correct?:";
-		cin>>ans;
-		if(ans == 'y' || ans == 'Y' )
+		getline(cin,ans);
+		if(ans == "y\r" || ans == "Y\r" )
 		{
-			cout<<"Wohooo";
-			cout<<"Play another game:?";
-			cin>>ans;
-			if( ans == 'y' || ans == 'Y' )
-				break;
-			else continue;
+			cout<<"Wohooo I win \n";
 		}
 		else
 		{
 			cout<<"Type a q to help me learn bro:";
-			cin>>q_str;
+			getline(cin,q_str);
 			cout<<"Also tell me what you were thinking of:";
-			cin>>a_str;
+			getline(cin,a_str);
 			Tree_Nd* nl_ptr = new Tree_Nd;
 			Tree_Nd* nr_ptr = new Tree_Nd;
 			nl_ptr->str = a_str;
@@ -206,11 +244,16 @@ void q_t::PlayGame()
 			q_ptr->prev->right = nr_ptr;
 
 		}
+		cout<<"Play another game:?";
+		getline(cin,ans);
+		if(ans == "y\r" || ans == "Y\r" )
+			continue;
+		else break;
 	}
 
 	// Game is completed now save the tree to array to File in preoder fashion
-	q_t::TreeToArr( q_ptr->root, ll_ptr->nd);
-	q_t::FileWriter(ll_ptr);
+	TreeToArr( q_ptr->root, ll_ptr->nd,&(ll_ptr->nd));
+	FileWriter(ll_ptr);
 
 	//Clean up resources
 	/*
