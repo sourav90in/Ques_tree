@@ -58,21 +58,22 @@ void Ques_Tree::Node_Cleaner(Tree_Nd* tn_ptr)
 Ques_Tree::~Ques_Tree()
 {
 	Node_Cleaner(this->root);
+	cout<<"Tree Destructor called \n";
 
-	delete this;
 }
 
 dyn_ll::~dyn_ll()
 {
 	ll_node * tmp_node = this->nd;
-	cout<<"LL destructor called";
+	ll_node* tmp2_node;
+	cout<<"LL destructor called \n";
 
 	while(tmp_node != NULL )
 	{
+		tmp2_node = tmp_node->next;
 		delete tmp_node;
-		tmp_node = this->nd->next;
+		tmp_node = tmp2_node;
 	}
-	//delete this;
 }
 
 
@@ -89,13 +90,18 @@ void QTreeToArr( Tree_Nd* tn_ptr, ll_node* ln_ptr,ll_node** prog_ptr )
 		else ln_ptr->type = Q_Nd;
 
 		//TO DO: Extra node allocated at end of LL incase of new input addition
-		if(ln_ptr->next == NULL )
+		if( (ln_ptr->next == NULL ) && ( tn_ptr->left != NULL ) )
 		{
 			ll_node* t_ptr = new ll_node;
 			ln_ptr->next = t_ptr;
 		}
 
 		QTreeToArr(tn_ptr->left, ln_ptr->next, prog_ptr);
+		if( ((*prog_ptr)->next == NULL ) && ( tn_ptr->right != NULL ) )
+		{
+			ll_node* t2_ptr = new ll_node;
+			(*prog_ptr)->next = t2_ptr;
+		}
 		QTreeToArr(tn_ptr->right,(*prog_ptr)->next , prog_ptr );
 	}
 	else return;
@@ -271,7 +277,6 @@ void q_t::PlayGame()
 	FileWriter(ll_ptr);
 	//TraverseLL(ll_ptr->nd);
 
-	//TO DO:Clean up resources
 	/*
 	 * Cleanup array first
 	 * Tree Next
