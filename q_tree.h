@@ -2,7 +2,7 @@
  * q_tree.h
  *
  *  Created on: Oct 14, 2017
- *      Author: Sourav
+ *      Author: Sourav Sen
  */
 
 #ifndef Q_TREE_H_
