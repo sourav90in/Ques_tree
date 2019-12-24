@@ -2,7 +2,7 @@
  * q_tree_impl.cpp
  *
  *  Created on: Oct 15, 2017
- *      Author: Sourav
+ *      Author: Sourav Sen
  */
 
 
