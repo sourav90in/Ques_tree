@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: Oct 21, 2017
- *      Author: Sourav
+ *      Author: Sourav Sen
  */
 
 #include "q_tree.h"
